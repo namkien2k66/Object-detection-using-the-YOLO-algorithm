@@ -1,0 +1,28 @@
+===== FPS =====
+Video: 1280x720, 30.0 fps gốc, 942 frame (bỏ 5 frame warm-up khi tính trung bình)
+Cấu hình: yolo11s.pt -> OpenVINO, imgsz=1280, conf=0.1, iou=0.6, tracker=custom_bytetrack.yaml
+Detect + track: 120.4 ms/frame -> 8.31 FPS (p50 119.0 ms, p95 137.2 ms)
+  - YOLO pre / inference / post: 8.8 / 101.6 / 2.8 ms
+  - Tracker + overhead khác: 7.1 ms
+Gộp ID + smoother: 4.0 ms | Vẽ + ghi video: 8.2 ms | Đọc frame: 2.7 ms
+Toàn pipeline (không tính phân tích failure): 7.39 FPS = 0.25x tốc độ video gốc
+End-to-end thực tế (wall-clock, gồm cả phân tích): 7.03 FPS
+Lưu ý: FPS phụ thuộc máy/CPU/IMGSZ; ghi rõ cấu hình khi báo cáo.
+
+===== FAILURE CASES (tự động gợi ý, cần đối chiếu bằng mắt) =====
+Tổng lượt box được theo dõi: 19423 | stable ID: 77 | raw ID của ByteTrack: 158 (tỉ lệ raw/stable = 2.05)
+
+[1] Vật thể nhỏ (diện tích < 1024px²): 10281 lượt (52.9%), 67 ID
+    conf trung bình: nhỏ 0.59 vs lớn 0.80
+    ID sống ≤ 15 frame: 2/77 (detect chập chờn; xe mới vào/ra khung hình cũng bị tính)
+    Lưu ý: xe ở xa bị bỏ sót hoàn toàn thì code không thấy được -> xem snapshot/video để đánh giá
+
+[2] Che khuất: 8 cặp xe khác nhau từng chồng lấn (IoU > 0.3), 12 lần bắt đầu chồng lấn
+    ByteTrack đổi raw ID phải nối lại: 93 lần (số frame mất trung bình 14.9, tối đa 58)
+
+[3] Motion blur (Laplacian var < 30.0 và tốc độ ≥ 8.0px/frame): 0 lượt, 0 ID
+    độ nét (Laplacian var) p10/p50/p90: 166 / 481 / 1317  -> chỉnh BLUR_LAP_MAX cho hợp video nếu cần
+    tốc độ (px/frame) p50/p90: 2.7 / 8.5  -> chỉnh BLUR_MIN_SPEED nếu cần
+
+[+] Loại xe của detector thô khác nhãn sau bỏ phiếu: 1326 lượt (detector nhầm car/truck/bus...)
+Chi tiết từng sự kiện: failure_events.csv | ảnh minh họa: Data\Example Results\analysis\snapshots
