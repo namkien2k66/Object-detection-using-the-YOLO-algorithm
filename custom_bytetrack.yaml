@@ -1,0 +1,7 @@
+tracker_type: bytetrack
+track_high_thresh: 0.3    # Hạ từ 0.5 xuống 0.3 (box mờ/nhỏ vẫn được nhận)
+track_low_thresh: 0.05    # Giữ lại các frame UAV bị mất nét khi bay nhanh
+new_track_thresh: 0.4     # Cho phép khởi tạo ID nhanh hơn khi vừa xuất hiện
+track_buffer: 240
+match_thresh: 0.7
+fuse_score: True
